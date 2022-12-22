@@ -35,9 +35,9 @@ const mostBlogs = (blogs) => {
     return {};
   }
 
-  const numberDictionary = _.countBy(blogs, (blog) => blog.author);
-  const maxBlogs = _.max(Object.values(numberDictionary));
-  const author = _.findKey(numberDictionary, (blogsCount) => blogsCount === maxBlogs);
+  const blogsByAuthor = _.countBy(blogs, (blog) => blog.author);
+  const maxBlogs = _.max(Object.values(blogsByAuthor));
+  const author = _.findKey(blogsByAuthor, (blogsCount) => blogsCount === maxBlogs);
 
   return {
     author,
@@ -45,6 +45,25 @@ const mostBlogs = (blogs) => {
   };
 };
 
+const mostLikes = (blogs) => {
+  if (!blogs) {
+    return {};
+  }
+
+  const blogsByAuthor = _.groupBy(blogs, 'author');
+  const likesByAuthor = _.mapValues(
+    blogsByAuthor,
+    (blogsByAuthorCurrent) => _.sumBy(blogsByAuthorCurrent, 'likes'),
+  );
+  const maxLikes = _.max(Object.values(likesByAuthor));
+  const author = _.findKey(likesByAuthor, (likesCount) => likesCount === maxLikes);
+
+  return {
+    author,
+    likes: maxLikes,
+  };
+};
+
 module.exports = {
-  dummy, totalLikes, favoriteBlog, mostBlogs,
+  dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes,
 };

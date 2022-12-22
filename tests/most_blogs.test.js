@@ -6,7 +6,7 @@ describe('most blogs', () => {
     expect(mostBlogs([])).toEqual({});
   });
 
-  test('of one blog', () => {
+  test('when list has only one blog equals one', () => {
     expect(mostBlogs([blogs[0]])).toEqual({
       author: blogs[0].author,
       blogs: 1,
