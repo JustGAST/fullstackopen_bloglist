@@ -35,7 +35,7 @@ describe('blogs api', () => {
     expect(response.body[0]._id).not.toBeDefined();
   });
 
-  test('correctly create new blog', async () => {
+  test('correctly creates new blog', async () => {
     const response = await api.post('/api/blogs')
       .send({
         title: 'New blog',
@@ -51,6 +51,20 @@ describe('blogs api', () => {
 
     expect(response.body.title).toBe('New blog');
     expect(blogsResponse.body.length).toBe(initialBlogsFixtures.length + 1);
+  });
+
+  test('creates new blog with zero likes', async () => {
+    const response = await api.post('/api/blogs')
+      .send({
+        title: 'New blog without likes',
+        author: 'Test author',
+        url: 'google.com',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(201);
+
+    expect(response.body.likes).toBe(0);
   });
 });
 
