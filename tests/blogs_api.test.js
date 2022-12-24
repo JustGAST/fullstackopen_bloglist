@@ -33,17 +33,36 @@ describe('blogs api', () => {
     expect(response.body[0].id).toBeDefined();
     // eslint-disable-next-line no-underscore-dangle
     expect(response.body[0]._id).not.toBeDefined();
-    // eslint-disable-next-line no-underscore-dangle
-    expect(response.body[0].id).toBe(initialBlogsFixtures[0]._id);
+  });
+
+  test('correctly create new blog', async () => {
+    const response = await api.post('/api/blogs')
+      .send({
+        title: 'New blog',
+        author: 'Test Author',
+        url: 'google.com',
+        likes: 0,
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(201);
+
+    const blogsResponse = await api.get('/api/blogs');
+
+    expect(response.body.title).toBe('New blog');
+    expect(blogsResponse.body.length).toBe(initialBlogsFixtures.length + 1);
   });
 });
 
 beforeEach(async () => {
   await Blog.deleteMany({});
 
-  const initialBlogs = initialBlogsFixtures.map((blog) => new Blog(blog));
-  const savePromises = initialBlogs.map((blog) => blog.save());
-  await Promise.all(savePromises);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const blog of initialBlogsFixtures) {
+    const blogObject = new Blog(blog);
+    // eslint-disable-next-line no-await-in-loop
+    await blogObject.save();
+  }
 });
 
 afterAll(() => {
