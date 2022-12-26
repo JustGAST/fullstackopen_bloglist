@@ -14,6 +14,34 @@ blogsRouter.post('/', async (request, response) => {
   response.status(201).json(result);
 });
 
+blogsRouter.get('/:id', async (request, response) => {
+  const { id } = request.params;
+  const blog = await Blog.findById(id);
+
+  response.json(blog);
+});
+
+blogsRouter.put('/:id', async (request, response) => {
+  const { id } = request.params;
+  const {
+    title, author, url, likes,
+  } = request.body;
+
+  if (!(author || title || url || likes)) {
+    response.status(400).json({ error: 'no params to update' });
+
+    return;
+  }
+
+  const data = {
+    title, author, url, likes,
+  };
+
+  const updatedBlog = await Blog.findByIdAndUpdate(id, data, { new: true, runValidators: true, context: 'query' });
+
+  response.json(updatedBlog);
+});
+
 blogsRouter.delete('/:id', async (request, response) => {
   const { id } = request.params;
   await Blog.findByIdAndDelete(id);

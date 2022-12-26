@@ -13,14 +13,14 @@ beforeEach(async () => {
 });
 
 describe('when there is initially some blogs saved', () => {
-  test('returns notes as json', async () => {
+  test('returns blogs as json', async () => {
     await api
       .get('/api/blogs')
       .expect(200)
       .expect('Content-Type', /application\/json/);
   });
 
-  test('returns same number of notes as in fixtures', async () => {
+  test('returns same number of blogs as in fixtures', async () => {
     const response = await api.get('/api/blogs');
 
     expect(response.body).toHaveLength(helper.initialBlogs.length);
@@ -41,8 +41,19 @@ describe('when there is initially some blogs saved', () => {
   });
 });
 
-describe('viewing a specific note', () => {
+describe('viewing a specific blog', () => {
+  test('succeeds with valid id', async () => {
+    const blogToView = helper.initialBlogs[0];
+    // eslint-disable-next-line no-underscore-dangle
+    const id = blogToView._id;
 
+    const response = await api.get(`/api/blogs/${id}`)
+      .expect(200)
+      .expect('Content-Type', /json/);
+
+    expect(response.body.id).toBe(id);
+    expect(response.body.title).toBe(blogToView.title);
+  });
 });
 
 describe('addition of a new blog', () => {
@@ -108,9 +119,9 @@ describe('addition of a new blog', () => {
 
 describe('deletion of a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
-    const noteToDelete = helper.initialBlogs.at(-1);
+    const blogToDelete = helper.initialBlogs.at(-1);
     // eslint-disable-next-line no-underscore-dangle
-    const id = noteToDelete._id;
+    const id = blogToDelete._id;
 
     await api.delete(`/api/blogs/${id}`)
       .expect(204);
@@ -119,7 +130,40 @@ describe('deletion of a blog', () => {
     const titles = blogsAfterDelete.map((b) => b.title);
 
     expect(blogsAfterDelete.length).toBe(helper.initialBlogs.length - 1);
-    expect(titles).not.toContain(noteToDelete.title);
+    expect(titles).not.toContain(blogToDelete.title);
+  });
+});
+
+describe('updating of a blog', () => {
+  test('succeeds with valid data', async () => {
+    const blogToUpdate = helper.initialBlogs[0];
+    // eslint-disable-next-line no-underscore-dangle
+    const id = blogToUpdate._id;
+
+    const newAuthor = 'Jackie Chan';
+    const updatedBlogReponse = await api.put(`/api/blogs/${id}`)
+      .send({
+        author: newAuthor,
+      })
+      .expect(200);
+
+    expect(updatedBlogReponse.body.author).toBe(newAuthor);
+    expect(updatedBlogReponse.body.title).toBe(blogToUpdate.title);
+
+    const blogsAtEnd = await helper.blogsInDb();
+
+    expect(blogsAtEnd.map((b) => b.author)).toContain(newAuthor);
+  });
+
+  test('fails with no data', async () => {
+    const blogToUpdate = helper.initialBlogs[0];
+    // eslint-disable-next-line no-underscore-dangle
+    const id = blogToUpdate._id;
+
+    const updatedBlogResponse = await api.put(`/api/blogs/${id}`)
+      .expect(400);
+
+    expect(updatedBlogResponse.body.error).toBe('no params to update');
   });
 });
 
