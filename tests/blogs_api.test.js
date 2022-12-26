@@ -66,6 +66,30 @@ describe('blogs api', () => {
 
     expect(response.body.likes).toBe(0);
   });
+
+  test('returns 400 if no title or url', async () => {
+    let response = await api.post('/api/blogs')
+      .send({
+        author: 'Test author',
+        url: 'google.com',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body.error).toContain('Blog validation failed: title');
+
+    response = await api.post('/api/blogs')
+      .send({
+        title: 'Test title',
+        author: 'Test author',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body.error).toContain('Blog validation failed: url');
+  });
 });
 
 beforeEach(async () => {
