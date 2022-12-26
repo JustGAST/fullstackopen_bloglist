@@ -19,6 +19,11 @@ usersRouter.post('/', async (request, response) => {
     return;
   }
 
+  if (password.length <= 3) {
+    response.status(400).json({ error: 'password should be longer than 3 symbols' });
+    return;
+  }
+
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
