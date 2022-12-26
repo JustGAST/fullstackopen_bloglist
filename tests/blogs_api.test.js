@@ -2,12 +2,17 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 
 const app = require('../app');
-const initialBlogsFixtures = require('./blogs_fixtures');
+const helper = require('./test_helper');
 const Blog = require('../models/blog');
 
 const api = supertest(app);
 
-describe('blogs api', () => {
+beforeEach(async () => {
+  await Blog.deleteMany({});
+  await Blog.insertMany(helper.initialBlogs);
+});
+
+describe('when there is initially some blogs saved', () => {
   test('returns notes as json', async () => {
     await api
       .get('/api/blogs')
@@ -18,7 +23,7 @@ describe('blogs api', () => {
   test('returns same number of notes as in fixtures', async () => {
     const response = await api.get('/api/blogs');
 
-    expect(response.body).toHaveLength(initialBlogsFixtures.length);
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
   });
 
   test('returns content of first blog', async () => {
@@ -34,8 +39,14 @@ describe('blogs api', () => {
     // eslint-disable-next-line no-underscore-dangle
     expect(response.body[0]._id).not.toBeDefined();
   });
+});
 
-  test('correctly creates new blog', async () => {
+describe('viewing a specific note', () => {
+
+});
+
+describe('addition of a new blog', () => {
+  test('succeeds with valid data', async () => {
     const response = await api.post('/api/blogs')
       .send({
         title: 'New blog',
@@ -47,10 +58,10 @@ describe('blogs api', () => {
       .expect('Content-Type', /json/)
       .expect(201);
 
-    const blogsResponse = await api.get('/api/blogs');
-
     expect(response.body.title).toBe('New blog');
-    expect(blogsResponse.body.length).toBe(initialBlogsFixtures.length + 1);
+
+    const blogsResponse = await api.get('/api/blogs');
+    expect(blogsResponse.body.length).toBe(helper.initialBlogs.length + 1);
   });
 
   test('creates new blog with zero likes', async () => {
@@ -67,7 +78,7 @@ describe('blogs api', () => {
     expect(response.body.likes).toBe(0);
   });
 
-  test('returns 400 if no title or url', async () => {
+  test('fails with 400 if no title or url', async () => {
     let response = await api.post('/api/blogs')
       .send({
         author: 'Test author',
@@ -89,18 +100,27 @@ describe('blogs api', () => {
       .expect(400);
 
     expect(response.body.error).toContain('Blog validation failed: url');
+
+    const blogsAtEnd = await helper.blogsInDb();
+    expect(blogsAtEnd.length).toBe(helper.initialBlogs.length);
   });
 });
 
-beforeEach(async () => {
-  await Blog.deleteMany({});
+describe('deletion of a blog', () => {
+  test('succeeds with status code 204 if id is valid', async () => {
+    const noteToDelete = helper.initialBlogs.at(-1);
+    // eslint-disable-next-line no-underscore-dangle
+    const id = noteToDelete._id;
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const blog of initialBlogsFixtures) {
-    const blogObject = new Blog(blog);
-    // eslint-disable-next-line no-await-in-loop
-    await blogObject.save();
-  }
+    await api.delete(`/api/blogs/${id}`)
+      .expect(204);
+
+    const blogsAfterDelete = await helper.blogsInDb();
+    const titles = blogsAfterDelete.map((b) => b.title);
+
+    expect(blogsAfterDelete.length).toBe(helper.initialBlogs.length - 1);
+    expect(titles).not.toContain(noteToDelete.title);
+  });
 });
 
 afterAll(() => {
