@@ -13,5 +13,16 @@ module.exports = {
   },
   rules: {
     'no-console': 0,
+    'no-underscore-dangle': [
+      'error',
+      { allow: ['_id', '__v'] },
+    ],
+    'no-param-reassign': [
+      'error',
+      {
+        props: true,
+        ignorePropertyModificationsFor: ['returnedObject'],
+      },
+    ],
   },
 };

@@ -4,12 +4,16 @@ const supertest = require('supertest');
 const app = require('../app');
 const helper = require('./test_helper');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 const api = supertest(app);
 
 beforeEach(async () => {
   await Blog.deleteMany({});
+  await User.deleteMany({});
+
   await Blog.insertMany(helper.initialBlogs);
+  await User.insertMany(helper.initialUsers);
 });
 
 describe('when there is initially some blogs saved', () => {
@@ -73,6 +77,19 @@ describe('addition of a new blog', () => {
 
     const blogsResponse = await api.get('/api/blogs');
     expect(blogsResponse.body.length).toBe(helper.initialBlogs.length + 1);
+  });
+
+  test('adds user to blog', async () => {
+    const response = await api.post('/api/blogs')
+      .send({
+        title: 'New blog',
+        author: 'Test author',
+        url: 'google.com',
+        likes: 0,
+      });
+
+    expect(response.body.user).toBeDefined();
+    expect(response.body.user.username).toBe(helper.initialUsers[0].username);
   });
 
   test('creates new blog with zero likes', async () => {
