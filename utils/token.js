@@ -8,7 +8,7 @@ const getDecodedTokenData = (request) => {
     return false;
   }
 
-  return authHeader.substring(7);
+  return authHeader.split(' ')[1];
 };
 
 module.exports = {

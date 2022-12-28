@@ -1,14 +1,18 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
+const jwt = require('jsonwebtoken');
 
 const app = require('../app');
 const helper = require('./test_helper');
 const Blog = require('../models/blog');
 const User = require('../models/user');
+const config = require('../utils/config');
 
 const api = supertest(app);
 
 beforeEach(async () => {
+  await mongoose.connect(config.MONGODB_URI);
+
   await Blog.deleteMany({});
   await User.deleteMany({});
 
@@ -67,6 +71,9 @@ describe('viewing a specific blog', () => {
 
 describe('addition of a new blog', () => {
   test('succeeds with valid data', async () => {
+    const user = await User.findOne({});
+    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+
     const response = await api.post('/api/blogs')
       .send({
         title: 'New blog',
@@ -75,6 +82,7 @@ describe('addition of a new blog', () => {
         likes: 0,
       })
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer: ${token}`)
       .expect('Content-Type', /json/)
       .expect(201);
 
@@ -84,20 +92,45 @@ describe('addition of a new blog', () => {
     expect(blogsResponse.body.length).toBe(helper.initialBlogs.length + 1);
   });
 
+  test('fails without token', async () => {
+    const response = await api.post('/api/blogs')
+      .send({
+        title: 'New blog',
+        author: 'Test Author',
+        url: 'google.com',
+        likes: 0,
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401);
+
+    expect(response.body.error).toBe('no such user found');
+  });
+
   test('adds user to blog', async () => {
+    const user = await User.findOne({});
+    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+
     const response = await api.post('/api/blogs')
       .send({
         title: 'New blog',
         author: 'Test author',
         url: 'google.com',
         likes: 0,
-      });
+      })
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer: ${token}`)
+      .expect('Content-Type', /json/)
+      .expect(201);
 
     expect(response.body.user).toBeDefined();
-    expect(response.body.user.username).toBe(helper.initialUsers[0].username);
+    expect(response.body.user.username).toBe(user.username);
   });
 
   test('creates new blog with zero likes', async () => {
+    const user = await User.findOne({});
+    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+
     const response = await api.post('/api/blogs')
       .send({
         title: 'New blog without likes',
@@ -105,6 +138,7 @@ describe('addition of a new blog', () => {
         url: 'google.com',
       })
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer: ${token}`)
       .expect('Content-Type', /json/)
       .expect(201);
 
@@ -112,12 +146,16 @@ describe('addition of a new blog', () => {
   });
 
   test('fails with 400 if no title or url', async () => {
+    const user = await User.findOne({});
+    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+
     let response = await api.post('/api/blogs')
       .send({
         author: 'Test author',
         url: 'google.com',
       })
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer: ${token}`)
       .expect('Content-Type', /json/)
       .expect(400);
 
@@ -129,6 +167,7 @@ describe('addition of a new blog', () => {
         author: 'Test author',
       })
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer: ${token}`)
       .expect('Content-Type', /json/)
       .expect(400);
 
@@ -141,18 +180,36 @@ describe('addition of a new blog', () => {
 
 describe('deletion of a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
-    const blogToDelete = helper.initialBlogs.at(-1);
+    const user = await User.findOne({});
+    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+
+    const blogToDeleteResponse = await api.post('/api/blogs')
+      .send({
+        title: 'New blog without likes',
+        author: 'Test author',
+        url: 'google.com',
+      })
+      .set('Authorization', `Bearer: ${token}`);
+
+    const blogToDelete = blogToDeleteResponse.body;
     // eslint-disable-next-line no-underscore-dangle
-    const id = blogToDelete._id;
+    const { id } = blogToDelete;
 
     await api.delete(`/api/blogs/${id}`)
+      .set('Authorization', `Bearer: ${token}`)
       .expect(204);
 
     const blogsAfterDelete = await helper.blogsInDb();
     const titles = blogsAfterDelete.map((b) => b.title);
 
-    expect(blogsAfterDelete.length).toBe(helper.initialBlogs.length - 1);
-    expect(titles).not.toContain(blogToDelete.title);
+    expect(blogsAfterDelete.length).toBe(helper.initialBlogs.length);
+    expect(titles).not.toContain('New blog without likes');
+  });
+
+  test('fails without token', async () => {
+    const blogToDelete = helper.initialBlogs[0];
+    await api.delete(`/api/blogs/${blogToDelete._id}`)
+      .expect(401);
   });
 });
 

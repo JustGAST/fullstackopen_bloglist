@@ -11,7 +11,7 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.post('/', tokenExtractor, userExtractor, async (request, response) => {
   const { user } = request;
   if (!user) {
-    response.status(400).json({ error: 'no such user found' });
+    response.status(401).json({ error: 'no such user found' });
   }
 
   const blogData = request.body;
@@ -64,15 +64,13 @@ blogsRouter.put('/:id', async (request, response) => {
 blogsRouter.delete('/:id', tokenExtractor, userExtractor, async (request, response) => {
   const { user } = request;
   if (!user) {
-    response.status(403).json({ error: 'auth token should be sent and valid' });
+    response.status(401).json({ error: 'auth token should be sent and valid' });
     return;
   }
 
   const { id } = request.params;
   const userId = user._id.toString();
   const blog = await Blog.findById(id);
-
-  console.log(blog.user, userId);
 
   if (blog.user.toString() !== userId) {
     response.status(403).json({ error: 'you don\'t have permissions to delete this blog' });
