@@ -1,7 +1,8 @@
+const jwt = require('jsonwebtoken');
+
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
 const User = require('../models/user');
-const { getDecodedTokenData } = require('../utils/token');
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
@@ -10,7 +11,7 @@ blogsRouter.get('/', async (request, response) => {
 });
 
 blogsRouter.post('/', async (request, response) => {
-  const tokenData = getDecodedTokenData(request);
+  const tokenData = jwt.verify(request.token, process.env.SECRET);
   const blogData = request.body;
 
   const user = await User.findById(tokenData.id);

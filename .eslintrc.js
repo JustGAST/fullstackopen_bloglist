@@ -21,7 +21,7 @@ module.exports = {
       'error',
       {
         props: true,
-        ignorePropertyModificationsFor: ['returnedObject'],
+        ignorePropertyModificationsFor: ['returnedObject', 'req'],
       },
     ],
   },

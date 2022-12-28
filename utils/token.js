@@ -1,5 +1,3 @@
-const jwt = require('jsonwebtoken');
-
 const getDecodedTokenData = (request) => {
   const authHeader = request.get('authorization');
   if (!authHeader) {
@@ -10,9 +8,7 @@ const getDecodedTokenData = (request) => {
     return false;
   }
 
-  const token = authHeader.substring(7);
-
-  return jwt.verify(token, process.env.SECRET);
+  return authHeader.substring(7);
 };
 
 module.exports = {
