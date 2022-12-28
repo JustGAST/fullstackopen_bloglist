@@ -58,6 +58,11 @@ describe('viewing a specific blog', () => {
     expect(response.body.id).toBe(id);
     expect(response.body.title).toBe(blogToView.title);
   });
+
+  test('returns 404 if no blog', async () => {
+    await api.get('/api/blogs/63ac025d9ca50126c96fc989')
+      .expect(404);
+  });
 });
 
 describe('addition of a new blog', () => {

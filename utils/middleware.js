@@ -4,10 +4,10 @@ const tokenExtractor = (req, res, next) => {
   const token = getDecodedTokenData(req);
   if (token === false) {
     next();
+    return;
   }
 
   req.token = token;
-
   next();
 };
 
