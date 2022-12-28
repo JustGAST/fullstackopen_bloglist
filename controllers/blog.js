@@ -1,8 +1,6 @@
-const jwt = require('jsonwebtoken');
-
 const blogsRouter = require('express').Router();
+const { tokenExtractor, userExtractor } = require('../utils/middleware');
 const Blog = require('../models/blog');
-const User = require('../models/user');
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
@@ -10,15 +8,13 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs);
 });
 
-blogsRouter.post('/', async (request, response) => {
-  const tokenData = jwt.verify(request.token, process.env.SECRET);
-  const blogData = request.body;
-
-  const user = await User.findById(tokenData.id);
+blogsRouter.post('/', tokenExtractor, userExtractor, async (request, response) => {
+  const { user } = request;
   if (!user) {
     response.status(400).json({ error: 'no such user found' });
   }
 
+  const blogData = request.body;
   blogData.user = user._id;
 
   const blog = new Blog(blogData);
@@ -65,26 +61,18 @@ blogsRouter.put('/:id', async (request, response) => {
   response.json(updatedBlog);
 });
 
-blogsRouter.delete('/:id', async (request, response) => {
-  if (!request.token) {
-    response.status(403).json({ error: 'auth token should be sent' });
-    return;
-  }
-
-  const decodedTokenData = jwt.verify(request.token, process.env.SECRET);
-  if (!decodedTokenData) {
-    response.status(403).json({ error: 'auth token should be sent' });
-    return;
-  }
-
-  if (!decodedTokenData.id) {
-    response.status(403).json({ error: 'invalid token' });
+blogsRouter.delete('/:id', tokenExtractor, userExtractor, async (request, response) => {
+  const { user } = request;
+  if (!user) {
+    response.status(403).json({ error: 'auth token should be sent and valid' });
     return;
   }
 
   const { id } = request.params;
-  const userId = decodedTokenData.id;
+  const userId = user._id.toString();
   const blog = await Blog.findById(id);
+
+  console.log(blog.user, userId);
 
   if (blog.user.toString() !== userId) {
     response.status(403).json({ error: 'you don\'t have permissions to delete this blog' });
