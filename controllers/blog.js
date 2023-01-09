@@ -12,6 +12,7 @@ blogsRouter.post('/', tokenExtractor, userExtractor, async (request, response) =
   const { user } = request;
   if (!user) {
     response.status(401).json({ error: 'no such user found' });
+    return;
   }
 
   const blogData = request.body;
@@ -43,7 +44,7 @@ blogsRouter.get('/:id', async (request, response) => {
 blogsRouter.put('/:id', async (request, response) => {
   const { id } = request.params;
   const {
-    title, author, url, likes,
+    title, author, url, likes, user,
   } = request.body;
 
   if (!(author || title || url || likes)) {
@@ -53,10 +54,12 @@ blogsRouter.put('/:id', async (request, response) => {
   }
 
   const data = {
-    title, author, url, likes,
+    title, author, url, likes, user,
   };
 
   const updatedBlog = await Blog.findByIdAndUpdate(id, data, { new: true, runValidators: true, context: 'query' });
+
+  await updatedBlog.populate('user', { username: 1, name: 1 });
 
   response.json(updatedBlog);
 });
