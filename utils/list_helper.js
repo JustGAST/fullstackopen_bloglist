@@ -19,9 +19,10 @@ const favoriteBlog = (blogs) => {
     return {};
   }
 
-  const favoriteBlogItem = blogs.reduce((favorite, blog) => (
-    favorite.likes > blog.likes ? favorite : blog
-  ), blogs[0]);
+  const favoriteBlogItem = blogs.reduce(
+    (favorite, blog) => (favorite.likes > blog.likes ? favorite : blog),
+    blogs[0]
+  );
 
   return {
     title: favoriteBlogItem.title,
@@ -37,7 +38,10 @@ const mostBlogs = (blogs) => {
 
   const blogsByAuthor = _.countBy(blogs, (blog) => blog.author);
   const maxBlogs = _.max(Object.values(blogsByAuthor));
-  const author = _.findKey(blogsByAuthor, (blogsCount) => blogsCount === maxBlogs);
+  const author = _.findKey(
+    blogsByAuthor,
+    (blogsCount) => blogsCount === maxBlogs
+  );
 
   return {
     author,
@@ -51,12 +55,14 @@ const mostLikes = (blogs) => {
   }
 
   const blogsByAuthor = _.groupBy(blogs, 'author');
-  const likesByAuthor = _.mapValues(
-    blogsByAuthor,
-    (blogsByAuthorCurrent) => _.sumBy(blogsByAuthorCurrent, 'likes'),
+  const likesByAuthor = _.mapValues(blogsByAuthor, (blogsByAuthorCurrent) =>
+    _.sumBy(blogsByAuthorCurrent, 'likes')
   );
   const maxLikes = _.max(Object.values(likesByAuthor));
-  const author = _.findKey(likesByAuthor, (likesCount) => likesCount === maxLikes);
+  const author = _.findKey(
+    likesByAuthor,
+    (likesCount) => likesCount === maxLikes
+  );
 
   return {
     author,
@@ -65,5 +71,9 @@ const mostLikes = (blogs) => {
 };
 
 module.exports = {
-  dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes,
+  dummy,
+  totalLikes,
+  favoriteBlog,
+  mostBlogs,
+  mostLikes,
 };

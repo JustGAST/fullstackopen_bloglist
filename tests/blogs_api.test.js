@@ -55,7 +55,8 @@ describe('viewing a specific blog', () => {
     // eslint-disable-next-line no-underscore-dangle
     const id = blogToView._id;
 
-    const response = await api.get(`/api/blogs/${id}`)
+    const response = await api
+      .get(`/api/blogs/${id}`)
       .expect(200)
       .expect('Content-Type', /json/);
 
@@ -64,17 +65,20 @@ describe('viewing a specific blog', () => {
   });
 
   test('returns 404 if no blog', async () => {
-    await api.get('/api/blogs/63ac025d9ca50126c96fc989')
-      .expect(404);
+    await api.get('/api/blogs/63ac025d9ca50126c96fc989').expect(404);
   });
 });
 
 describe('addition of a new blog', () => {
   test('succeeds with valid data', async () => {
     const user = await User.findOne({});
-    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+    const token = jwt.sign(
+      { username: user.username, id: user.id },
+      process.env.SECRET
+    );
 
-    const response = await api.post('/api/blogs')
+    const response = await api
+      .post('/api/blogs')
       .send({
         title: 'New blog',
         author: 'Test Author',
@@ -93,7 +97,8 @@ describe('addition of a new blog', () => {
   });
 
   test('fails without token', async () => {
-    const response = await api.post('/api/blogs')
+    const response = await api
+      .post('/api/blogs')
       .send({
         title: 'New blog',
         author: 'Test Author',
@@ -109,9 +114,13 @@ describe('addition of a new blog', () => {
 
   test('adds user to blog', async () => {
     const user = await User.findOne({});
-    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+    const token = jwt.sign(
+      { username: user.username, id: user.id },
+      process.env.SECRET
+    );
 
-    const response = await api.post('/api/blogs')
+    const response = await api
+      .post('/api/blogs')
       .send({
         title: 'New blog',
         author: 'Test author',
@@ -129,9 +138,13 @@ describe('addition of a new blog', () => {
 
   test('creates new blog with zero likes', async () => {
     const user = await User.findOne({});
-    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+    const token = jwt.sign(
+      { username: user.username, id: user.id },
+      process.env.SECRET
+    );
 
-    const response = await api.post('/api/blogs')
+    const response = await api
+      .post('/api/blogs')
       .send({
         title: 'New blog without likes',
         author: 'Test author',
@@ -147,9 +160,13 @@ describe('addition of a new blog', () => {
 
   test('fails with 400 if no title or url', async () => {
     const user = await User.findOne({});
-    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+    const token = jwt.sign(
+      { username: user.username, id: user.id },
+      process.env.SECRET
+    );
 
-    let response = await api.post('/api/blogs')
+    let response = await api
+      .post('/api/blogs')
       .send({
         author: 'Test author',
         url: 'google.com',
@@ -161,7 +178,8 @@ describe('addition of a new blog', () => {
 
     expect(response.body.error).toContain('Blog validation failed: title');
 
-    response = await api.post('/api/blogs')
+    response = await api
+      .post('/api/blogs')
       .send({
         title: 'Test title',
         author: 'Test author',
@@ -181,9 +199,13 @@ describe('addition of a new blog', () => {
 describe('deletion of a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
     const user = await User.findOne({});
-    const token = jwt.sign({ username: user.username, id: user.id }, process.env.SECRET);
+    const token = jwt.sign(
+      { username: user.username, id: user.id },
+      process.env.SECRET
+    );
 
-    const blogToDeleteResponse = await api.post('/api/blogs')
+    const blogToDeleteResponse = await api
+      .post('/api/blogs')
       .send({
         title: 'New blog without likes',
         author: 'Test author',
@@ -195,7 +217,8 @@ describe('deletion of a blog', () => {
     // eslint-disable-next-line no-underscore-dangle
     const { id } = blogToDelete;
 
-    await api.delete(`/api/blogs/${id}`)
+    await api
+      .delete(`/api/blogs/${id}`)
       .set('Authorization', `Bearer: ${token}`)
       .expect(204);
 
@@ -208,8 +231,7 @@ describe('deletion of a blog', () => {
 
   test('fails without token', async () => {
     const blogToDelete = helper.initialBlogs[0];
-    await api.delete(`/api/blogs/${blogToDelete._id}`)
-      .expect(401);
+    await api.delete(`/api/blogs/${blogToDelete._id}`).expect(401);
   });
 });
 
@@ -220,7 +242,8 @@ describe('updating of a blog', () => {
     const id = blogToUpdate._id;
 
     const newAuthor = 'Jackie Chan';
-    const updatedBlogReponse = await api.put(`/api/blogs/${id}`)
+    const updatedBlogReponse = await api
+      .put(`/api/blogs/${id}`)
       .send({
         author: newAuthor,
       })
@@ -239,8 +262,7 @@ describe('updating of a blog', () => {
     // eslint-disable-next-line no-underscore-dangle
     const id = blogToUpdate._id;
 
-    const updatedBlogResponse = await api.put(`/api/blogs/${id}`)
-      .expect(400);
+    const updatedBlogResponse = await api.put(`/api/blogs/${id}`).expect(400);
 
     expect(updatedBlogResponse.body.error).toBe('no params to update');
   });

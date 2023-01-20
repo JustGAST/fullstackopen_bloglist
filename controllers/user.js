@@ -14,9 +14,7 @@ usersRouter.get('/', async (request, response) => {
 });
 
 usersRouter.post('/', async (request, response) => {
-  const {
-    username, name, password,
-  } = request.body;
+  const { username, name, password } = request.body;
 
   if (!(username && name && password)) {
     response.status(400).json({ error: 'missing data' });
@@ -24,7 +22,9 @@ usersRouter.post('/', async (request, response) => {
   }
 
   if (password.length <= 3) {
-    response.status(400).json({ error: 'password should be longer than 3 symbols' });
+    response
+      .status(400)
+      .json({ error: 'password should be longer than 3 symbols' });
     return;
   }
 
@@ -32,7 +32,9 @@ usersRouter.post('/', async (request, response) => {
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
   const user = new User({
-    username, name, passwordHash,
+    username,
+    name,
+    passwordHash,
   });
   await user.save();
 

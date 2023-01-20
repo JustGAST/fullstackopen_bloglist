@@ -12,7 +12,8 @@ beforeEach(async () => {
 
 describe('addition of a new user', () => {
   test('succeeds with valid data', async () => {
-    const userResponse = await api.post('/api/users')
+    const userResponse = await api
+      .post('/api/users')
       .send({
         username: 'newuser',
         name: 'New User',
@@ -30,14 +31,14 @@ describe('addition of a new user', () => {
   });
 
   test('fails with empty data', async () => {
-    const userResponse = await api.post('/api/users')
-      .expect(400);
+    const userResponse = await api.post('/api/users').expect(400);
 
     expect(userResponse.body.error).toBe('missing data');
   });
 
   test('fails with short username', async () => {
-    const userResponse = await api.post('/api/users')
+    const userResponse = await api
+      .post('/api/users')
       .send({
         username: 'A',
         name: 'Aaaaaa',
@@ -45,14 +46,17 @@ describe('addition of a new user', () => {
       })
       .expect(400);
 
-    expect(userResponse.body.error).toContain('User validation failed: username');
+    expect(userResponse.body.error).toContain(
+      'User validation failed: username'
+    );
 
     const usersAtEnd = await helper.usersInDb();
     expect(usersAtEnd.length).toBe(0);
   });
 
   test('fails with short password', async () => {
-    const userResponse = await api.post('/api/users')
+    const userResponse = await api
+      .post('/api/users')
       .send({
         username: 'Aaaaa',
         name: 'Aaaaaa',
@@ -60,7 +64,9 @@ describe('addition of a new user', () => {
       })
       .expect(400);
 
-    expect(userResponse.body.error).toContain('password should be longer than 3 symbols');
+    expect(userResponse.body.error).toContain(
+      'password should be longer than 3 symbols'
+    );
 
     const usersAtEnd = await helper.usersInDb();
     expect(usersAtEnd.length).toBe(0);

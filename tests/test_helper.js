@@ -64,7 +64,8 @@ const initialUsers = [
   {
     username: 'testuser',
     name: 'Test User',
-    passwordHash: '$2b$10$0LG0HT2XGZ8sxTjc53K0Bu9xMUKyCPG4sKmwol/YuWeGJV1M0b2m2',
+    passwordHash:
+      '$2b$10$0LG0HT2XGZ8sxTjc53K0Bu9xMUKyCPG4sKmwol/YuWeGJV1M0b2m2',
   },
 ];
 
@@ -81,5 +82,8 @@ const usersInDb = async () => {
 };
 
 module.exports = {
-  initialBlogs, initialUsers, blogsInDb, usersInDb,
+  initialBlogs,
+  initialUsers,
+  blogsInDb,
+  usersInDb,
 };

@@ -5,18 +5,14 @@ module.exports = {
     node: true,
     jest: true,
   },
-  extends: 'airbnb-base',
-  overrides: [
-  ],
+  extends: ['airbnb-base', 'prettier'],
+  overrides: [],
   parserOptions: {
     ecmaVersion: 'latest',
   },
   rules: {
     'no-console': 0,
-    'no-underscore-dangle': [
-      'error',
-      { allow: ['_id', '__v'] },
-    ],
+    'no-underscore-dangle': ['error', { allow: ['_id', '__v'] }],
     'no-param-reassign': [
       'error',
       {
