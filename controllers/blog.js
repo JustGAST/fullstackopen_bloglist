@@ -8,6 +8,21 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs);
 });
 
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const { id } = request.params;
+  const { comment } = request.body;
+  const blog = await Blog.findById(id);
+
+  if (!blog) {
+    response.status(404).json({ error: 'blog not found with id' });
+  }
+
+  blog.comments.push(comment);
+  await blog.save();
+
+  response.json(blog);
+});
+
 blogsRouter.post(
   '/',
   tokenExtractor,
