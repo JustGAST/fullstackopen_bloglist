@@ -19,6 +19,7 @@ blogsRouter.post('/:id/comments', async (request, response) => {
 
   blog.comments.push(comment);
   await blog.save();
+  await blog.populate('user', { username: 1, name: 1 });
 
   response.json(blog);
 });
